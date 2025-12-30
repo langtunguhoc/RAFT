@@ -1,0 +1,12 @@
+2025/12/29 20:26:01 Starting RAFT node node2 at localhost:5002
+2025/12/29 20:26:01 Peers: [localhost:5001 localhost:5003 localhost:5004 localhost:5005]
+2025/12/29 20:26:01 [node2] Starting RAFT node at localhost:5002
+2025/12/29 20:26:01 [node2] Peers: [localhost:5001 localhost:5003 localhost:5004 localhost:5005]
+2025/12/29 20:26:01 [node2] Connected to peer localhost:5003
+2025/12/29 20:26:01 [node2] Connected to peer localhost:5005
+2025/12/29 20:26:01 [node2] Connected to peer localhost:5004
+2025/12/29 20:26:01 [node2] Connected to peer localhost:5001
+2025/12/29 20:26:01 Node node2 listening on localhost:5002
+2025/12/29 20:26:02 [node2] Received RequestVote from node4 for term 1
+2025/12/29 20:26:02 [node2] Becoming follower for term 1 (leader: )
+2025/12/29 20:26:02 [node2] Granting vote to node4 for term 1

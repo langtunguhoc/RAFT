@@ -1,0 +1,13 @@
+2025/12/29 20:26:01 Starting RAFT node node4 at localhost:5004
+2025/12/29 20:26:01 Peers: [localhost:5001 localhost:5002 localhost:5003 localhost:5005]
+2025/12/29 20:26:01 [node4] Starting RAFT node at localhost:5004
+2025/12/29 20:26:01 [node4] Peers: [localhost:5001 localhost:5002 localhost:5003 localhost:5005]
+2025/12/29 20:26:01 [node4] Connected to peer localhost:5005
+2025/12/29 20:26:01 [node4] Connected to peer localhost:5001
+2025/12/29 20:26:01 [node4] Connected to peer localhost:5002
+2025/12/29 20:26:01 [node4] Connected to peer localhost:5003
+2025/12/29 20:26:01 Node node4 listening on localhost:5004
+2025/12/29 20:26:02 [node4] Starting election for term 1
+2025/12/29 20:26:02 [node4] Received vote from localhost:5003 (total: 2/3)
+2025/12/29 20:26:02 [node4] Received vote from localhost:5001 (total: 3/3)
+2025/12/29 20:26:02 [node4] Becoming leader for term 1
