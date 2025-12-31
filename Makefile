@@ -21,9 +21,9 @@ proto:
 # Build the node and client binaries
 build: proto
 	@echo "Building node binary..."
-	go build -o bin/node ./cmd/node
+	go build -o bin/node.exe ./cmd/node
 	@echo "Building client binary..."
-	go build -o bin/client ./cmd/client
+	go build -o bin/client.exe ./cmd/client
 	@echo "Build complete!"
 
 # Download dependencies
@@ -35,23 +35,25 @@ deps:
 run-cluster: build
 	@echo "Starting 5-node RAFT cluster..."
 	@mkdir -p logs
-	./bin/node -id node1 -address localhost:5001 -peers localhost:5002,localhost:5003,localhost:5004,localhost:5005 > logs/node1.log 2>&1 &
-	./bin/node -id node2 -address localhost:5002 -peers localhost:5001,localhost:5003,localhost:5004,localhost:5005 > logs/node2.log 2>&1 &
-	./bin/node -id node3 -address localhost:5003 -peers localhost:5001,localhost:5002,localhost:5004,localhost:5005 > logs/node3.log 2>&1 &
-	./bin/node -id node4 -address localhost:5004 -peers localhost:5001,localhost:5002,localhost:5003,localhost:5005 > logs/node4.log 2>&1 &
-	./bin/node -id node5 -address localhost:5005 -peers localhost:5001,localhost:5002,localhost:5003,localhost:5004 > logs/node5.log 2>&1 &
+	./bin/node.exe -id node1 -address localhost:5001 -peers localhost:5002,localhost:5003,localhost:5004,localhost:5005 > logs/node1.log 2>&1 &
+	./bin/node.exe -id node2 -address localhost:5002 -peers localhost:5001,localhost:5003,localhost:5004,localhost:5005 > logs/node2.log 2>&1 &
+	./bin/node.exe -id node3 -address localhost:5003 -peers localhost:5001,localhost:5002,localhost:5004,localhost:5005 > logs/node3.log 2>&1 &
+	./bin/node.exe -id node4 -address localhost:5004 -peers localhost:5001,localhost:5002,localhost:5003,localhost:5005 > logs/node4.log 2>&1 &
+	./bin/node.exe -id node5 -address localhost:5005 -peers localhost:5001,localhost:5002,localhost:5003,localhost:5004 > logs/node5.log 2>&1 &
+#	./bin/node.exe -id node6 -address localhost:5006 -peers localhost:5001,localhost:5002,localhost:5003,localhost:5004,localhost:5005 > logs/node6.log 2>&1 &
 	@echo "Cluster started! Logs are in ./logs/"
 	@echo "Use 'make client' to connect"
 
 # Stop the cluster
 stop-cluster:
 	@echo "Stopping cluster..."
-	-pkill -f "bin/node" 2>/dev/null || true
+	-pkill -f "bin/node.exe" 2>/dev/null || true
 	@echo "Cluster stopped"
 
 # Run the client
 client: build
-	./bin/client
+#	./bin/client.exe -nodes "localhost:5001,localhost:5002,localhost:5003,localhost:5004,localhost:5005,localhost:5006"
+	./bin/client.exe -nodes "localhost:5001,localhost:5002,localhost:5003,localhost:5004,localhost:5005"
 
 # View logs
 logs:
@@ -77,19 +79,19 @@ clean:
 
 # Run a single node (for testing)
 run-node1:
-	./bin/node -id node1 -address localhost:5001 -peers localhost:5002,localhost:5003,localhost:5004,localhost:5005
+	./bin/node.exe -id node1 -address localhost:5001 -peers localhost:5002,localhost:5003,localhost:5004,localhost:5005
 
 run-node2:
-	./bin/node -id node2 -address localhost:5002 -peers localhost:5001,localhost:5003,localhost:5004,localhost:5005
+	./bin/node.exe -id node2 -address localhost:5002 -peers localhost:5001,localhost:5003,localhost:5004,localhost:5005
 
 run-node3:
-	./bin/node -id node3 -address localhost:5003 -peers localhost:5001,localhost:5002,localhost:5004,localhost:5005
+	./bin/node.exe -id node3 -address localhost:5003 -peers localhost:5001,localhost:5002,localhost:5004,localhost:5005
 
 run-node4:
-	./bin/node -id node4 -address localhost:5004 -peers localhost:5001,localhost:5002,localhost:5003,localhost:5005
+	./bin/node.exe -id node4 -address localhost:5004 -peers localhost:5001,localhost:5002,localhost:5003,localhost:5005
 
 run-node5:
-	./bin/node -id node5 -address localhost:5005 -peers localhost:5001,localhost:5002,localhost:5003,localhost:5004
+	./bin/node.exe -id node5 -address localhost:5005 -peers localhost:5001,localhost:5002,localhost:5003,localhost:5004
 
 # Help
 help:

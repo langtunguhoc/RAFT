@@ -6,6 +6,10 @@ import (
 	"math/rand"
 	"sync"
 	"time"
+	"encoding/json"
+	"path/filepath"
+    "os"
+	"strings"
 
 	pb "raft-consensus/proto"
 
@@ -134,11 +138,14 @@ func NewNode(config *Config) *Node {
 		stopCh:      make(chan struct{}),
 		rand:        rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
+	n.readPersist()
 
-	// Add a dummy entry at index 0 (RAFT log is 1-indexed)
-	n.log = append(n.log, LogEntry{Term: 0, Index: 0, Command: ""})
-
-	return n
+    if len(n.log) == 0 {
+        n.log = append(n.log, LogEntry{Term: 0, Index: 0, Command: ""})
+    }
+	
+	n.restoreStateMachine()
+    return n
 }
 
 // Start starts the RAFT node
@@ -272,24 +279,73 @@ func (n *Node) applyCommittedEntries() {
 	}
 }
 
-// applyToStateMachine applies a log entry to the key-value store
-func (n *Node) applyToStateMachine(entry LogEntry) {
-	n.kvStoreMu.Lock()
-	defer n.kvStoreMu.Unlock()
+// saveKVStore dumps the current kvStore map to a JSON file (database snapshot)
+// Note: This function assumes the caller already holds n.kvStoreMu
+func (n *Node) saveKVStore() {
+    // Convert the map to indented JSON for readability
+    data, err := json.MarshalIndent(n.kvStore, "", "  ")
+    if err != nil {
+        log.Printf("[%s] Error marshaling database: %v", n.id, err)
+        return
+    }
 
-	// Parse command: "SET key value" or "DELETE key"
-	var op, key, value string
-	fmt.Sscanf(entry.Command, "%s %s %s", &op, &key, &value)
+    // Define the file path in the logs folder (e.g., "logs/node1_database.json")
+    filename := filepath.Join("logs", fmt.Sprintf("%s_database.json", n.id))
 
-	switch op {
-	case "SET":
-		n.kvStore[key] = value
-		log.Printf("[%s] Applied: SET %s = %s (index=%d, term=%d)", n.id, key, value, entry.Index, entry.Term)
-	case "DELETE":
-		delete(n.kvStore, key)
-		log.Printf("[%s] Applied: DELETE %s (index=%d, term=%d)", n.id, key, entry.Index, entry.Term)
-	}
+    // Write to file (create if not exists, overwrite if exists)
+    err = os.WriteFile(filename, data, 0644)
+    if err != nil {
+        log.Printf("[%s] Error saving database to disk: %v", n.id, err)
+    } else {
+        // Optional: Uncomment for debugging if you want to see when it saves
+        // fmt.Printf("[%s] Database saved to %s\n", n.id, filename)
+    }
 }
+
+// raft/node.go
+
+func (n *Node) applyToStateMachine(entry LogEntry) {
+    n.kvStoreMu.Lock()
+    defer n.kvStoreMu.Unlock()
+
+    // --- PARSING PART (Your original logic) ---
+    // Parse command: "SET key value" or "DELETE key"
+    var op, key, value string
+    
+    // This reads the string entry.Command and fills the variables
+    fmt.Sscanf(entry.Command, "%s %s %s", &op, &key, &value)
+
+    switch op {
+    case "SET":
+        n.kvStore[key] = value
+        log.Printf("[%s] Applied: SET %s = %s (index=%d, term=%d)", n.id, key, value, entry.Index, entry.Term)
+    case "DELETE":
+        delete(n.kvStore, key)
+        log.Printf("[%s] Applied: DELETE %s (index=%d, term=%d)", n.id, key, entry.Index, entry.Term)
+    }
+    
+    // --- SAVING PART (New Requirement) ---
+    // This creates the _database.json file
+    n.saveKVStore()
+}
+// // applyToStateMachine applies a log entry to the key-value store
+// func (n *Node) applyToStateMachine(entry LogEntry) {
+// 	n.kvStoreMu.Lock()
+// 	defer n.kvStoreMu.Unlock()
+
+// 	// Parse command: "SET key value" or "DELETE key"
+// 	var op, key, value string
+// 	fmt.Sscanf(entry.Command, "%s %s %s", &op, &key, &value)
+
+// 	switch op {
+// 	case "SET":
+// 		n.kvStore[key] = value
+// 		log.Printf("[%s] Applied: SET %s = %s (index=%d, term=%d)", n.id, key, value, entry.Index, entry.Term)
+// 	case "DELETE":
+// 		delete(n.kvStore, key)
+// 		log.Printf("[%s] Applied: DELETE %s (index=%d, term=%d)", n.id, key, entry.Index, entry.Term)
+// 	}
+// }
 
 // GetValue gets a value from the key-value store
 func (n *Node) GetValue(key string) (string, bool) {
@@ -323,4 +379,92 @@ func (n *Node) GetCurrentTerm() int64 {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
 	return n.currentTerm
+}
+
+type PersistentState struct {
+    CurrentTerm int64
+    VotedFor    string
+    Log         []LogEntry
+}
+
+func (n *Node) getStorageFilename() string {
+    return filepath.Join("logs", fmt.Sprintf("%s_storage.json", n.id))
+}
+
+func (n *Node) persist() {
+    state := PersistentState{
+        CurrentTerm: n.currentTerm,
+        VotedFor:    n.votedFor,
+        Log:         n.log,
+    }
+
+    data, err := json.MarshalIndent(state, "", "  ")
+    if err != nil {
+        log.Printf("[%s] Error marshaling state: %v", n.id, err)
+        return
+    }
+
+    err = os.WriteFile(n.getStorageFilename(), data, 0644)
+    if err != nil {
+        log.Printf("[%s] Error writing state to file: %v", n.id, err)
+    }
+}
+
+func (n *Node) readPersist() {
+    filename := n.getStorageFilename()
+    if _, err := os.Stat(filename); os.IsNotExist(err) {
+        return
+    }
+
+    data, err := os.ReadFile(filename)
+    if err != nil {
+        log.Printf("[%s] Error reading state file: %v", n.id, err)
+        return
+    }
+
+    var state PersistentState
+    err = json.Unmarshal(data, &state)
+    if err != nil {
+        log.Printf("[%s] Error unmarshaling state: %v", n.id, err)
+        return
+    }
+
+
+    n.currentTerm = state.CurrentTerm
+    n.votedFor = state.VotedFor
+    n.log = state.Log
+    
+    
+    log.Printf("[%s] Restored state from disk: Term=%d, LogLen=%d", n.id, n.currentTerm, len(n.log))
+}
+
+// restoreStateMachine re-executes all commands in the log to rebuild the kvStore
+func (n *Node) restoreStateMachine() {
+    n.mu.Lock()
+    defer n.mu.Unlock()
+
+    log.Printf("[%s] Replaying %d log entries to restore state...", n.id, len(n.log))
+
+    for _, entry := range n.log {
+        if entry.Command == "" {
+            continue
+        }
+
+        parts := strings.Fields(entry.Command)
+        
+        if len(parts) >= 3 && parts[0] == "SET" {
+            key := parts[1]
+            val := parts[2]
+            n.kvStore[key] = val
+        } else if len(parts) >= 2 && parts[0] == "DELETE" {
+            key := parts[1]
+            delete(n.kvStore, key)
+        }
+    }
+
+    if len(n.log) > 0 {
+        lastIndex := n.log[len(n.log)-1].Index
+        n.commitIndex = lastIndex
+        n.lastApplied = lastIndex
+    }
 }

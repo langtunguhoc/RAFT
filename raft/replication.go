@@ -213,6 +213,7 @@ func (n *Node) AppendEntries(ctx context.Context, req *pb.AppendEntriesRequest) 
 				Index:   entry.Index,
 				Command: entry.Command,
 			})
+			n.persist()
 			log.Printf("[%s] Appended entry: index=%d, term=%d, command=%s",
 				n.id, entry.Index, entry.Term, entry.Command)
 		}
@@ -252,6 +253,7 @@ func (n *Node) ProposeCommand(command string) bool {
 	}
 
 	n.log = append(n.log, entry)
+	n.persist()
 	n.matchIndex[n.id] = newIndex
 
 	log.Printf("[%s] Leader appended new entry: index=%d, term=%d, command=%s",

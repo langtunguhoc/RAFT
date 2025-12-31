@@ -1,0 +1,56 @@
+{
+  "CurrentTerm": 29,
+  "VotedFor": "node5",
+  "Log": [
+    {
+      "Term": 0,
+      "Index": 0,
+      "Command": ""
+    },
+    {
+      "Term": 1,
+      "Index": 1,
+      "Command": "SET testkey 100"
+    },
+    {
+      "Term": 1,
+      "Index": 2,
+      "Command": "SET testkey +1"
+    },
+    {
+      "Term": 6,
+      "Index": 3,
+      "Command": "SET testkey 100"
+    },
+    {
+      "Term": 13,
+      "Index": 4,
+      "Command": "SET mykey 100"
+    },
+    {
+      "Term": 21,
+      "Index": 5,
+      "Command": "SET testkey = 100"
+    },
+    {
+      "Term": 27,
+      "Index": 6,
+      "Command": "SET ten1 Thanh"
+    },
+    {
+      "Term": 27,
+      "Index": 7,
+      "Command": "SET testkey = 100"
+    },
+    {
+      "Term": 27,
+      "Index": 8,
+      "Command": "SET teskey 100"
+    },
+    {
+      "Term": 27,
+      "Index": 9,
+      "Command": "SET teskey 200"
+    }
+  ]
+}

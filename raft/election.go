@@ -17,6 +17,7 @@ func (n *Node) startElection() {
 	n.state = Candidate
 	n.currentTerm++
 	n.votedFor = n.id
+	n.persist()
 	currentTerm := n.currentTerm
 	lastLogIndex, lastLogTerm := n.getLastLogInfo()
 
@@ -123,6 +124,7 @@ func (n *Node) becomeFollower(term int64, leaderId string) {
 	n.state = Follower
 	n.currentTerm = term
 	n.votedFor = ""
+	n.persist()
 	n.leaderId = leaderId
 
 	// Stop heartbeat timer if running
@@ -204,6 +206,7 @@ func (n *Node) RequestVote(ctx context.Context, req *pb.RequestVoteRequest) (*pb
 		if logUpToDate {
 			log.Printf("[%s] Granting vote to %s for term %d", n.id, req.CandidateId, req.Term)
 			n.votedFor = req.CandidateId
+			n.persist()
 			resp.VoteGranted = true
 
 			// Reset election timer since we granted a vote

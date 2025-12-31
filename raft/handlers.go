@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	pb "raft-consensus/proto"
 )
@@ -49,12 +50,12 @@ func (n *Node) ClientRequest(ctx context.Context, req *pb.ClientRequestMessage) 
 			index := int64(len(n.log)) - 1
 			n.mu.RUnlock()
 
-			if n.WaitForCommit(index, 5000) {
+			if n.WaitForCommit(index, 5000*time.Millisecond) {
 				resp.Success = true
 				resp.Value = req.Value
 				log.Printf("[%s] SET %s=%s committed", n.id, req.Key, req.Value)
 			} else {
-				resp.Error = "Commit timeout"
+				resp.Error = "Set Commit timeout"
 			}
 		} else {
 			resp.Error = "Failed to propose command"
@@ -68,11 +69,11 @@ func (n *Node) ClientRequest(ctx context.Context, req *pb.ClientRequestMessage) 
 			index := int64(len(n.log)) - 1
 			n.mu.RUnlock()
 
-			if n.WaitForCommit(index, 5000) {
+			if n.WaitForCommit(index, 5000*time.Millisecond) {
 				resp.Success = true
 				log.Printf("[%s] DELETE %s committed", n.id, req.Key)
 			} else {
-				resp.Error = "Commit timeout"
+				resp.Error = "Delete Commit timeout"
 			}
 		} else {
 			resp.Error = "Failed to propose command"
