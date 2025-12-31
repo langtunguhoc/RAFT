@@ -1,0 +1,16 @@
+2025/12/31 16:50:12 Starting RAFT node node3 at localhost:5003
+2025/12/31 16:50:12 Peers: [localhost:5001 localhost:5002 localhost:5004 localhost:5005]
+2025/12/31 16:50:12 [node3] Starting RAFT node at localhost:5003
+2025/12/31 16:50:12 [node3] Peers: [localhost:5001 localhost:5002 localhost:5004 localhost:5005]
+2025/12/31 16:50:12 Node node3 listening on localhost:5003
+2025/12/31 16:50:12 [node3] Connected to peer localhost:5005
+2025/12/31 16:50:12 [node3] Connected to peer localhost:5001
+2025/12/31 16:50:12 [node3] Connected to peer localhost:5004
+2025/12/31 16:50:12 [node3] Connected to peer localhost:5002
+2025/12/31 16:50:12 [node3] Received RequestVote from node1 for term 1
+2025/12/31 16:50:12 [node3] Becoming follower for term 1 (leader: )
+2025/12/31 16:50:12 [node3] Granting vote to node1 for term 1
+2025/12/31 16:50:28 [node3] Appended entry: index=1, term=1, command=SET ten Ha
+2025/12/31 16:50:28 [node3] Updated commit index to 1
+2025/12/31 16:50:28 [node3] Applied: SET ten = Ha (index=1, term=1)
+2025/12/31 16:50:49 Shutting down node node3...

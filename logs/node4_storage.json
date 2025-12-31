@@ -1,0 +1,21 @@
+{
+  "CurrentTerm": 3,
+  "VotedFor": "node5",
+  "Log": [
+    {
+      "Term": 0,
+      "Index": 0,
+      "Command": ""
+    },
+    {
+      "Term": 1,
+      "Index": 1,
+      "Command": "SET ten Ha"
+    },
+    {
+      "Term": 1,
+      "Index": 2,
+      "Command": "SET ten2 Lam"
+    }
+  ]
+}
